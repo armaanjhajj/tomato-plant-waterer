@@ -1,0 +1,44 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+repositories { mavenCentral() }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21          // guarantees 21-bytecode
+}
+
+javafx {
+    version = '21'
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.media']
+}
+
+application {
+    mainClass = 'TomatoPlantWatererApp'
+}
+
+tasks.register('bundleDmg', Exec) {
+    dependsOn installDist                    // make sure the JAR exists
+
+    def inputDir  = "$buildDir/install/tomato-plant-waterer/lib"
+    def outputDir = "$buildDir/dist"
+
+    commandLine(
+        'jpackage',
+        '--type',        'dmg',
+        '--name',        'TomatoPlantWaterer',
+        '--app-version', '1.0',
+        '--input',       inputDir,                 // folder that holds the jars
+        '--main-jar',    'tomato-plant-waterer.jar',
+        '--main-class',  'TomatoPlantWatererApp',  // <--- NEW LINE
+        '--dest',        outputDir,
+        '--icon',        'src/main/resources/images/plant.icns' // optional
+    )
+}
+
